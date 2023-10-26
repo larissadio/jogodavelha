@@ -1,0 +1,177 @@
+<html>
+<head>
+    <title>Jogo da Velha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .player-input {
+            margin: 10px;
+            padding: 5px;
+            font-size: 20px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #1bc5c5;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #0e759e;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 36px;
+            text-align: center;
+            line-height: 100px;
+            background-color: #fff;
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cell:hover {
+            background-color: #f2f2f2;
+        }
+
+        #winner-message {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .winner-x, .winner-o {
+            background-color: #00426d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jogo da Velha</h1>
+        <input id="player1" class="player-input" placeholder="nome do jogador X" />
+        <input id="player2" class="player-input" placeholder="nome do jogador O" />
+        <button id="start-button" class="button">Iniciar Jogo</button>
+        <div id="game-container" style="display: none;">
+            <div id="game-board"></div>
+        </div>
+        <p id="winner-message" style="display: none;"></p>
+    </div>
+
+    <script>
+        const player1Input = document.getElementById('player1');
+        const player2Input = document.getElementById('player2');
+        const startButton = document.getElementById('start-button');
+        const gameContainer = document.getElementById('game-container');
+        const gameBoard = document.getElementById('game-board');
+        const winnerMessage = document.getElementById('winner-message');
+        const cellInputs = [];
+        const cellElements = [];
+        let currentPlayer = 'X';
+        let gameActive = false;
+        let moves = 0;
+
+        function checkWinner() {
+            const winningCombos = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            for (const combo of winningCombos) {
+                const [a, b, c] = combo;
+                if (
+                    cellInputs[a].textContent &&
+                    cellInputs[a].textContent === cellInputs[b].textContent &&
+                    cellInputs[a].textContent === cellInputs[c].textContent
+                ) {
+                    gameActive = false;
+                    const winnerName = currentPlayer === 'X' ? player1Input.value : player2Input.value;
+                    winnerMessage.textContent = `${winnerName} venceu!`;
+                    winnerMessage.classList.add(`winner-${currentPlayer}`);
+                    winnerMessage.style.display = 'block';
+                    return;
+                }
+            }
+
+            if (moves === 9) {
+                winnerMessage.textContent = 'Empate!';
+                winnerMessage.classList.add('draw');
+                winnerMessage.style.display = 'block';
+                gameActive = false;
+            }
+        }
+
+        function cellClick(index) {
+            return function() {
+                if (!gameActive || cellInputs[index].textContent !== '') return;
+
+                cellInputs[index].textContent = currentPlayer;
+                cellElements[index].textContent = currentPlayer;
+                checkWinner();
+
+                if (gameActive) {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
+                moves++;
+            };
+        }
+
+        startButton.addEventListener('click', () => {
+            if (player1Input.value && player2Input.value) {
+                gameContainer.style.display = 'block';
+                startButton.style.display = 'none';
+                player1Input.disabled = true;
+                player2Input.disabled = true;
+                gameActive = true;
+
+                for (let i = 0; i < 9; i++) {
+                    const cellInput = document.createElement('div');
+                    cellInput.style.display = 'none';
+                    cellInputs.push(cellInput);
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'cell';
+                    cellElement.addEventListener('click', cellClick(i));
+                    cellElements.push(cellElement);
+                    gameBoard.appendChild(cellElement);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
